@@ -1,0 +1,285 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --accent-color: #38bdf8;
+    --text-muted: #94a3b8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Navbar & Header */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    border-bottom: 1px solid #334155;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.8rem 2rem; /* Balanced navigation padding */
+}
+
+/* AIOS Logo Alignment and Sizing */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-logo {
+    width: 55px; /* Scaled up so the logo details stay crisp */
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+}
+
+.logo-text span {
+    color: var(--accent-color);
+    font-size: 0.8rem;
+    display: block;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: -2px;
+}
+
+/* Navigation Links */
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--accent-color);
+}
+
+/* Sections General layout */
+section {
+    padding: 8rem 2rem 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Hero Section & Large Branding Centerpiece */
+.hero-section {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.hero-emblem {
+    width: 160px; /* Strong, high-impact branding element */
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 2rem;
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+}
+
+.hero-content h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.highlight {
+    color: var(--accent-color);
+}
+
+.hero-content p {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+}
+
+.btn {
+    display: inline-block;
+    background: var(--accent-color);
+    color: var(--bg-color);
+    padding: 0.8rem 2.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+}
+
+/* Skills Grid */
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.skill-card {
+    background: var(--card-bg);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-card i {
+    color: var(--accent-color);
+}
+
+/* Projects Display Grid Layout */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.project-card {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-color);
+}
+
+.project-card h3 {
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.project-card p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+/* Pill-Shaped Tech Badges Styling */
+.project-tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.project-tech-tags span {
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--accent-color);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    font-weight: 500;
+}
+
+.project-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    margin-right: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.project-links a:hover {
+    color: var(--accent-color);
+}
+
+/* Contact Interface */
+.contact-section {
+    text-align: center;
+}
+
+.contact-section p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.contact-btn {
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    border: 1px solid #334155;
+    transition: all 0.3s;
+}
+
+.contact-btn:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+/* Footer Section */
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    border-top: 1px solid #334155;
+    margin-top: 4rem;
+}
+
+/* Responsive constraints */
+@media (max-width: 768px) {
+    .nav-links { display: none; }
+    .hero-content h1 { font-size: 2.5rem; }
+    .hero-emblem { width: 120px; height: 120px; }
+}
