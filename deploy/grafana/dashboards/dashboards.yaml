@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: "AIOS Dashboards"
+    orgId: 1
+    folder: "AIOS"
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards

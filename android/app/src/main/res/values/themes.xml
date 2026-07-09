@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AIOS" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.AIOS.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#1e1e2e</item>
+        <item name="postSplashScreenTheme">Theme.AIOS</item>
+    </style>
+</resources>

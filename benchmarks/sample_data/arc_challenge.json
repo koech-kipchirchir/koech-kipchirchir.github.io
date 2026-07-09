@@ -1,0 +1,12 @@
+[
+    {"id": 0, "question": "Which of the following is a renewable energy source?", "choices": ["Natural gas", "Coal", "Solar power", "Nuclear power"], "answerKey": "C"},
+    {"id": 1, "question": "What is the chemical symbol for gold?", "choices": ["Go", "Gd", "Au", "Ag"], "answerKey": "C"},
+    {"id": 2, "question": "Which planet is known as the Red Planet?", "choices": ["Venus", "Mars", "Jupiter", "Saturn"], "answerKey": "B"},
+    {"id": 3, "question": "What force keeps planets in orbit around the sun?", "choices": ["Electromagnetism", "Gravity", "Nuclear force", "Friction"], "answerKey": "B"},
+    {"id": 4, "question": "What is the smallest unit of life?", "choices": ["Atom", "Molecule", "Cell", "Tissue"], "answerKey": "C"},
+    {"id": 5, "question": "Which gas makes up most of Earth's atmosphere?", "choices": ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], "answerKey": "C"},
+    {"id": 6, "question": "What is the process by which plants make food?", "choices": ["Respiration", "Photosynthesis", "Digestion", "Fermentation"], "answerKey": "B"},
+    {"id": 7, "question": "Which type of rock is formed from cooled magma?", "choices": ["Sedimentary", "Metamorphic", "Igneous", "Fossilized"], "answerKey": "C"},
+    {"id": 8, "question": "What is the speed of light approximately?", "choices": ["3 x 10^6 m/s", "3 x 10^8 m/s", "3 x 10^10 m/s", "3 x 10^12 m/s"], "answerKey": "B"},
+    {"id": 9, "question": "Which of the following is NOT a state of matter?", "choices": ["Solid", "Liquid", "Gas", "Energy"], "answerKey": "D"}
+]

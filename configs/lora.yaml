@@ -1,0 +1,38 @@
+# AIOS LoRA Configuration
+# =======================
+# Standalone LoRA hyper-parameters for fine-tuning.
+# Can be loaded standalone or merged with train.yaml.
+#
+# Usage:
+#   python -c "from finetuning.config import LoRAConfig; cfg = LoRAConfig.from_yaml('configs/lora.yaml')"
+
+# ---- LoRA rank & scaling --------------------------------------------------
+r: 16                    # LoRA rank (higher = more capacity, more VRAM)
+alpha: 32                # LoRA alpha scaling factor (typical: r * 2)
+dropout: 0.0             # Dropout for LoRA layers (0.0 = no dropout)
+bias: "none"             # Bias: "none" | "all" | "lora_only"
+use_rslora: true         # Rank-stabilized LoRA (normalizes by r / sqrt(2))
+use_dora: false          # Weight-decomposed LoRA (adds magnitude learning)
+
+# ---- Target modules -------------------------------------------------------
+# Override the model's default target modules.
+# Leave empty to use per-model defaults from the registry.
+target_modules: []
+#  - "q_proj"
+#  - "k_proj"
+#  - "v_proj"
+#  - "o_proj"
+#  - "gate_proj"
+#  - "up_proj"
+#  - "down_proj"
+
+# ---- QLoRA (4-bit) --------------------------------------------------------
+load_in_4bit: true
+bnb_4bit_quant_type: "nf4"       # "nf4" | "fp4"
+bnb_4bit_compute_dtype: "bfloat16"
+bnb_4bit_use_double_quant: true
+
+# ---- LoftQ (optional, requires quantized base model) -----------------------
+# loftq_config: null
+# loftq_bits: 4
+# loftq_iter: 4

@@ -1,0 +1,278 @@
+"""
+AIOS Fine-tuning Export
+
+Exports a trained LoRA adapter to multiple formats:
+
+* **Adapters** — Save LoRA weights and tokenizer (``save_pretrained``).
+* **GGUF** — Convert the merged model to GGUF format for ``llama.cpp``.
+* **Ollama** — Generate an Ollama ``Modelfile`` for local deployment.
+
+Usage::
+
+    # Export adapters only
+    python -m finetuning.export --model-path checkpoints_v2/run-name/final --format adapters
+
+    # Export to GGUF
+    python -m finetuning.export --model-path checkpoints_v2/run-name/final --format gguf --output-dir exports/
+
+    # Create Ollama Modelfile
+    python -m finetuning.export --model-path checkpoints_v2/run-name/final --format ollama --ollama-name aios-qwen3
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import List, Optional
+
+import torch
+from unsloth import FastLanguageModel
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from finetuning.config import MODEL_REGISTRY, list_supported_models  # noqa: E402
+from finetuning.model import load_for_inference, merge_and_unload, save_model  # noqa: E402
+from finetuning.utils import setup_logger  # noqa: E402
+
+logger = setup_logger("aios.finetuning.export")
+
+
+# ---------------------------------------------------------------------------
+# Adapters export
+# ---------------------------------------------------------------------------
+
+
+def export_adapters(
+    model,
+    tokenizer,
+    output_dir: Path,
+) -> None:
+    """Save LoRA adapter weights and tokenizer to disk.
+
+    Args:
+        model:      The PEFT model.
+        tokenizer:  Corresponding tokenizer.
+        output_dir: Destination directory.
+    """
+    save_model(model, tokenizer, output_dir, save_mode="huggingface")
+    logger.info("Adapters saved to %s", output_dir)
+
+
+# ---------------------------------------------------------------------------
+# GGUF export
+# ---------------------------------------------------------------------------
+
+
+def export_gguf(
+    model,
+    tokenizer,
+    output_dir: Path,
+    quantization: str = "q4_k_m",
+) -> None:
+    """Export the merged model to GGUF format.
+
+    Uses Unsloth's native GGUF export. Falls back to llama.cpp's
+    convert script if needed.
+
+    Args:
+        model:         The merged model (after calling ``merge_and_unload()``).
+        tokenizer:     Corresponding tokenizer.
+        output_dir:    Destination directory.
+        quantization:  GGUF quantisation type (e.g. ``"q4_k_m"``, ``"q8_0"``).
+    """
+    try:
+        save_model(model, tokenizer, output_dir, save_mode="gguf", quantization=quantization)
+        return
+    except (ImportError, AttributeError) as exc:
+        logger.warning("Unsloth GGUF export failed (%s). Falling back to llama.cpp.", exc)
+
+    # Fallback: Save HF then convert via llama.cpp
+    hf_dir = output_dir / "hf_model"
+    hf_dir.mkdir(parents=True, exist_ok=True)
+    model.save_pretrained(str(hf_dir))
+    tokenizer.save_pretrained(str(hf_dir))
+    logger.info("HF model saved to %s", hf_dir)
+
+    convert_script = (
+        Path(os.environ.get("LLAMA_CPP_DIR", "../llama.cpp"))
+        / "convert_hf_to_gguf.py"
+    )
+    if not convert_script.exists():
+        logger.warning(
+            "llama.cpp convert script not found at %s. "
+            "Set the LLAMA_CPP_DIR environment variable or install Unsloth GGUF.",
+            convert_script,
+        )
+        logger.warning("Skipping GGUF conversion. HF model is available at %s.", hf_dir)
+        return
+
+    gguf_path = output_dir / f"model-{quantization}.gguf"
+    cmd = [
+        sys.executable,
+        str(convert_script),
+        str(hf_dir),
+        "--outfile", str(gguf_path),
+        "--outtype", quantization.replace("_", "-"),
+    ]
+    logger.info("Running: %s", " ".join(cmd))
+    subprocess.run(cmd, check=True)
+    logger.info("GGUF model saved to %s", gguf_path)
+
+
+# ---------------------------------------------------------------------------
+# Ollama Modelfile
+# ---------------------------------------------------------------------------
+
+
+def export_ollama(
+    model_path: Path,
+    output_dir: Path,
+    ollama_name: str,
+) -> None:
+    """Generate an Ollama ``Modelfile`` and optionally import the model.
+
+    Args:
+        model_path:   Path to the merged HF model or GGUF file.
+        output_dir:   Destination directory for the Modelfile.
+        ollama_name:  Name for the Ollama model (e.g. ``"aios-qwen3"``).
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    modelfile_path = output_dir / "Modelfile"
+
+    # Check if we have a GGUF file
+    gguf_files = list(output_dir.glob("*.gguf"))
+    if gguf_files:
+        model_ref = str(gguf_files[0].resolve())
+    else:
+        model_ref = str(model_path.resolve())
+
+    modelfile_content = f"""# AIOS Fine-tuned Model — Ollama Modelfile
+# Generated by AIOS fine-tuning export
+
+FROM {model_ref}
+
+TEMPLATE \"\"\"{{ .System }}
+{{ .Prompt }}
+\"\"\"
+
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER num_ctx 4096
+"""
+
+    modelfile_path.write_text(modelfile_content, encoding="utf-8")
+    logger.info("Ollama Modelfile created: %s", modelfile_path)
+
+    logger.info(
+        "To import into Ollama, run:\n"
+        "  ollama create %s -f %s",
+        ollama_name,
+        modelfile_path,
+    )
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+
+def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="AIOS Fine-tuning — Export trained model"
+    )
+    parser.add_argument(
+        "--model-path",
+        type=str,
+        required=True,
+        help="Path to the saved LoRA adapter directory",
+    )
+    parser.add_argument(
+        "--model-key",
+        type=str,
+        default="qwen3-8b",
+        choices=list_supported_models(),
+        help="Model architecture key",
+    )
+    parser.add_argument(
+        "--format",
+        type=str,
+        choices=["adapters", "gguf", "ollama", "all"],
+        default="all",
+        help="Export format(s) to produce",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="exports",
+        help="Base directory for exports",
+    )
+    parser.add_argument(
+        "--ollama-name",
+        type=str,
+        default="aios",
+        help="Model name for Ollama import",
+    )
+    parser.add_argument(
+        "--quantization",
+        type=str,
+        default="q4_k_m",
+        help="GGUF quantisation type",
+    )
+    parser.add_argument(
+        "--max-seq",
+        type=int,
+        default=4096,
+        help="Maximum sequence length",
+    )
+    return parser.parse_args(argv)
+
+
+def main() -> None:
+    """CLI entry point."""
+    args = parse_args()
+
+    model_info = MODEL_REGISTRY[args.model_key]
+    output_dir = Path(args.output_dir) / args.model_key
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info("Loading model from %s ...", args.model_path)
+
+    model, tokenizer = load_for_inference(
+        model_path=args.model_path,
+        max_seq_length=args.max_seq,
+        load_in_4bit=False,
+    )
+
+    formats: List[str] = (
+        ["adapters", "gguf", "ollama"] if args.format == "all" else [args.format]
+    )
+
+    if "adapters" in formats:
+        adapters_dir = output_dir / "adapters"
+        export_adapters(model, tokenizer, adapters_dir)
+
+    if "gguf" in formats:
+        logger.info("Merging LoRA adapters into base model ...")
+        merged = merge_and_unload(model)
+        export_gguf(merged, tokenizer, output_dir / "gguf", args.quantization)
+        del merged
+
+    if "ollama" in formats:
+        export_ollama(
+            Path(args.model_path),
+            output_dir / "ollama",
+            args.ollama_name,
+        )
+
+    logger.info("Export complete. Files are in %s", output_dir)
+
+
+if __name__ == "__main__":
+    main()

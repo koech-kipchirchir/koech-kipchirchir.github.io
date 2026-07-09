@@ -1,0 +1,79 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pth
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Checkpoints / outputs
+outputs/
+checkpoints/
+*.pt
+*.pth
+*.bin
+
+# Dataset snapshots
+dataset_snapshots/
+
+# Logs
+logs/
+*.log
+
+# Env
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
+.idea/dataSources/
+.idea/sqlDataSources.xml
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Evaluation reports
+eval_reports/
+benchmark_reports/
+
+# Large data files
+/alpaca_raw.json
+/bpe_tokenizer.json
+/dataset_v2_full.json
+llm/dataset_full.json
+llm/dataset_v2_full.json
+llm/test_subset.json
+web/conversations.json
+web/device_status.json
+web/logs.json
+web/memory.json
+web/settings.json

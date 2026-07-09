@@ -1,0 +1,61 @@
+# AIOS Prometheus configuration
+
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  scrape_timeout:      10s
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files
+rule_files:
+  - "alerts.yml"
+
+# Scrape targets
+scrape_configs:
+
+  # AIOS API (Prometheus metrics endpoint)
+  - job_name: 'aios-api'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['aios-api:8000']
+        labels:
+          service: 'aios-api'
+
+  # Node Exporter (host-level metrics)
+  - job_name: 'node'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'host'
+
+  # cAdvisor (container-level metrics)
+  - job_name: 'cadvisor'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'containers'
+
+  # Docker Engine metrics
+  - job_name: 'docker'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['docker:9323']
+        labels:
+          service: 'docker'
+
+  # vLLM metrics
+  - job_name: 'vllm'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['vllm:8001']
+        labels:
+          service: 'vllm'

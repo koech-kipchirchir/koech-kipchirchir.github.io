@@ -1,0 +1,44 @@
+# AIOS .dockerignore
+# Exclude non-essential files from Docker build context
+
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.ruff_cache
+.gradle
+gradle/
+gradlew
+gradlew.bat
+build/
+build.gradle.kts
+settings.gradle.kts
+local.properties
+*.iml
+.idea/
+*.log
+*.err
+*.out
+
+# Datasets (large)
+datasets/
+checkpoints_v2/
+outputs/
+finetuning/
+dataset_v2_full.json
+alpaca_raw.json
+
+# Reports
+benchmark_reports/
+
+# Docs
+docs/
+
+# Voice / vision / desktop (optional runtime)
+voice/
+vision/
+desktop/
+
+# Web legacy
+web/

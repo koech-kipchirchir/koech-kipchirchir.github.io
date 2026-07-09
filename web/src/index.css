@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+
+  /* Colors */
+  --bg-deep: #05030a;
+  --bg-core: #0b0816;
+  --bg-card: rgba(18, 14, 34, 0.7);
+  --bg-card-hover: rgba(26, 21, 48, 0.85);
+  
+  --neon-purple: #9d4edd;
+  --neon-purple-glow: rgba(157, 78, 221, 0.35);
+  
+  --neon-cyan: #00f5d4;
+  --neon-cyan-glow: rgba(0, 245, 212, 0.35);
+
+  --neon-green: #39ff14;
+  --neon-green-glow: rgba(57, 255, 20, 0.25);
+
+  --neon-red: #ff007f;
+  --neon-red-glow: rgba(255, 0, 127, 0.25);
+
+  --text-primary: #f3f0ff;
+  --text-secondary: #a5a1b8;
+  --text-muted: #6c6885;
+  --border-light: rgba(157, 78, 221, 0.15);
+  --border-active: rgba(0, 245, 212, 0.4);
+
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-neon: 0 0 15px var(--neon-purple-glow);
+  --shadow-cyan: 0 0 15px var(--neon-cyan-glow);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  background-image: 
+    radial-gradient(at 10% 20%, rgba(157, 78, 221, 0.08) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(0, 245, 212, 0.06) 0px, transparent 50%);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--neon-purple-glow);
+    border-color: rgba(157, 78, 221, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(157, 78, 221, 0.6);
+    border-color: rgba(157, 78, 221, 0.6);
+  }
+}
+
+@keyframes pulseGreen {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--neon-green-glow);
+    background-color: var(--neon-green);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
+    background-color: #55ff3c;
+  }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+@keyframes brainWave {
+  0% { transform: rotate(0deg) scale(1); filter: hue-rotate(0deg); }
+  50% { transform: rotate(180deg) scale(1.05); filter: hue-rotate(90deg); }
+  100% { transform: rotate(360deg) scale(1); filter: hue-rotate(0deg); }
+}
+
+.brain-logo {
+  animation: brainWave 15s infinite linear;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-purple);
+}

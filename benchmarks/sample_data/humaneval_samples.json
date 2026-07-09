@@ -1,0 +1,7 @@
+[
+    {"entry_point": "add", "prompt": "def add(a: int, b: int) -> int:\n    \"\"\"Return the sum of a and b.\"\"\"\n", "tests": ["add(1, 2) == 3", "add(-1, 1) == 0", "add(0, 0) == 0"]},
+    {"entry_point": "is_even", "prompt": "def is_even(n: int) -> bool:\n    \"\"\"Return True if n is even.\"\"\"\n", "tests": ["is_even(2) == True", "is_even(3) == False", "is_even(0) == True"]},
+    {"entry_point": "factorial", "prompt": "def factorial(n: int) -> int:\n    \"\"\"Return n! for non-negative n.\"\"\"\n", "tests": ["factorial(0) == 1", "factorial(5) == 120"]},
+    {"entry_point": "reverse_string", "prompt": "def reverse_string(s: str) -> str:\n    \"\"\"Return s reversed.\"\"\"\n", "tests": ["reverse_string('abc') == 'cba'", "reverse_string('') == ''"]},
+    {"entry_point": "fibonacci", "prompt": "def fibonacci(n: int) -> int:\n    \"\"\"Return the nth Fibonacci number.\"\"\"\n", "tests": ["fibonacci(0) == 0", "fibonacci(1) == 1", "fibonacci(10) == 55"]}
+]

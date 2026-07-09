@@ -1,0 +1,109 @@
+# Monitoring stack for AIOS
+# Usage: docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d
+
+services:
+
+  # ---- Prometheus ----
+  prometheus:
+    <<: [*restart-policy]
+    image: prom/prometheus:v2.54.0
+    container_name: aios-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging: *default-logging
+    networks:
+      - aios-net
+
+  # ---- Grafana ----
+  grafana:
+    <<: [*restart-policy]
+    image: grafana/grafana:11.1.0
+    container_name: aios-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_PASSWORD:-aiosadmin}"
+      GF_INSTALL_PLUGINS: ""
+      GF_SERVER_ROOT_URL: "http://localhost:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging: *default-logging
+    networks:
+      - aios-net
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+  # ---- cAdvisor (container metrics) ----
+  cadvisor:
+    <<: [*restart-policy]
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: aios-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    logging: *default-logging
+    networks:
+      - aios-net
+    profiles:
+      - monitoring-full
+
+  # ---- Node Exporter (host metrics) ----
+  node-exporter:
+    <<: [*restart-policy]
+    image: prom/node-exporter:v1.8.1
+    container_name: aios-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    logging: *default-logging
+    networks:
+      - aios-net
+    profiles:
+      - monitoring-full
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

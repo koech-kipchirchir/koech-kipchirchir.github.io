@@ -1,0 +1,65 @@
+# AIOS Systemd Service
+# Install: sudo cp aios.service /etc/systemd/system/
+# Enable:  sudo systemctl enable aios
+# Start:   sudo systemctl start aios
+# Status:  sudo systemctl status aios
+
+[Unit]
+Description=AIOS Production API Server
+Documentation=https://github.com/anomalyco/aios
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aios
+Group=aios
+WorkingDirectory=/opt/aios
+
+# Environment
+Environment=AIOS_ENVIRONMENT=production
+Environment=AIOS_LOG_DIR=/var/log/aios
+Environment=PYTHONUNBUFFERED=1
+
+# Load .env file if present
+EnvironmentFile=-/etc/aios/env
+
+# Executable
+ExecStart=/usr/local/bin/uvicorn api.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 2 \
+    --log-level info \
+    --proxy-headers \
+    --forwarded-allow-ips "*"
+
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# Restart policy — automatic restart on failure
+Restart=always
+RestartSec=10
+StartLimitBurst=5
+StartLimitIntervalSec=120
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/aios /data /opt/aios
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitCORE=0
+
+# OOM
+OOMScoreAdjust=-500
+
+# Health check (every 30s)
+HealthCheckCommand=python3 /opt/aios/deploy/scripts/healthcheck.py --url http://localhost:8000/v1/live
+HealthCheckInterval=30
+HealthCheckTimeout=10
+
+[Install]
+WantedBy=multi-user.target

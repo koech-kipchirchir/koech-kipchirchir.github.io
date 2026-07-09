@@ -1,0 +1,68 @@
+# GPU-accelerated overrides for AIOS production stack
+# Usage: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+
+services:
+
+  aios-api:
+    build:
+      dockerfile: deploy/Dockerfile.gpu
+    image: aios:gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      CUDA_VISIBLE_DEVICES: "all"
+      AIOS_PROVIDER: "vllm"
+      AIOS_API_BASE: "http://vllm:8001/v1"
+
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      OLLAMA_HOST: "0.0.0.0"
+      OLLAMA_KEEP_ALIVE: "24h"
+
+  vllm:
+    <<: [*restart-policy]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.vllm
+    image: aios-vllm:latest
+    container_name: aios-vllm
+    ports:
+      - "8001:8001"
+    volumes:
+      - vllm_cache:/root/.cache
+    environment:
+      CUDA_VISIBLE_DEVICES: "0"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, compute]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 15s
+      start_period: 120s
+      retries: 3
+    logging: *default-logging
+    networks:
+      - aios-net
+    profiles:
+      - gpu
+
+volumes:
+  vllm_cache:
+    driver: local

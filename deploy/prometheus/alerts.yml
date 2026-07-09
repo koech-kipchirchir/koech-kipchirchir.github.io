@@ -1,0 +1,91 @@
+# AIOS Prometheus alerting rules
+
+groups:
+  - name: aios_alerts
+    interval: 30s
+    rules:
+
+      # ---- API Health ----
+      - alert: APIInstanceDown
+        expr: up{job="aios-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AIOS API instance {{ $labels.instance }} is down"
+          description: "Instance {{ $labels.instance }} has been unreachable for >1m."
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP 5xx error rate ({{ $value | humanizePercentage }})"
+          description: "5xx error rate exceeds 5% over the last 5 minutes."
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5.0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 latency is {{ $value }}s"
+          description: "P95 response latency exceeds 5s over the last 5 minutes."
+
+      - alert: RateLimitedRequests
+        expr: rate(http_requests_total{status="429"}[5m]) > 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rate-limited requests detected"
+          description: "Clients are being rate-limited at {{ $value }} req/s."
+
+      # ---- System Resources ----
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host memory usage >90%"
+          description: "Memory usage is at {{ $value | humanizePercentage }}."
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host CPU usage >90%"
+          description: "CPU usage is at {{ $value }}%."
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space <10% free"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining."
+
+      # ---- GPU ----
+      - alert: HighGPUMemoryUsage
+        expr: avg by(instance) (nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU memory usage >90%"
+          description: "GPU memory is at {{ $value | humanizePercentage }}."
+
+      # ---- Containers ----
+      - alert: ContainerRestartLoop
+        expr: rate(container_restarts[10m]) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is restarting frequently"
+          description: "Container {{ $labels.name }} has restarted {{ $value }} times in the last 10 minutes."

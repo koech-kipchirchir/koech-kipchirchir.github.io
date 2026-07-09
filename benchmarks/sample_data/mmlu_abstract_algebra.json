@@ -1,0 +1,7 @@
+[
+    {"id": 0, "question": "What is the derivative of sin(x)?", "choices": ["cos(x)", "-cos(x)", "sin(x)", "-sin(x)"], "answer": "A"},
+    {"id": 1, "question": "Which data structure uses FIFO ordering?", "choices": ["Stack", "Queue", "Tree", "Graph"], "answer": "B"},
+    {"id": 2, "question": "What is the time complexity of binary search?", "choices": ["O(1)", "O(log n)", "O(n)", "O(n^2)"], "answer": "B"},
+    {"id": 3, "question": "Which planet is closest to the sun?", "choices": ["Venus", "Earth", "Mercury", "Mars"], "answer": "C"},
+    {"id": 4, "question": "What does CPU stand for?", "choices": ["Central Processing Unit", "Computer Personal Unit", "Central Program Utility", "Core Processing Unit"], "answer": "A"}
+]

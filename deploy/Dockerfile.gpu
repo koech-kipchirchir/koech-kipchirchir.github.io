@@ -1,0 +1,60 @@
+# AIOS GPU Production Dockerfile — CUDA-enabled
+# Build:  docker build -f deploy/Dockerfile.gpu -t aios:gpu .
+# Run:    docker run --gpus all -p 8000:8000 aios:gpu
+
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04 AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-dev python3-pip \
+    gcc curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY deploy/requirements.txt /tmp/requirements.txt
+
+RUN pip3 install --upgrade pip && \
+    pip3 install -r /tmp/requirements.txt
+
+# Install PyTorch with CUDA
+RUN pip3 install torch==2.4.0 --index-url https://download.pytorch.org/whl/cu124
+
+# Install vLLM for GPU inference
+RUN pip3 install vllm==0.6.0
+
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04 AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    AIOS_ENVIRONMENT=production \
+    AIOS_LOG_DIR=/var/log/aios \
+    CUDA_VISIBLE_DEVICES=all
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3-pip curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=base /usr/local/lib/python3.11/dist-packages /usr/local/lib/python3.11/dist-packages
+COPY --from=base /usr/local/bin /usr/local/bin
+
+COPY aios_core/ ./aios_core/
+COPY api/ ./api/
+COPY agents/ ./agents/
+COPY models/ ./models/
+COPY deploy/ ./deploy/
+
+VOLUME ["/var/log/aios", "/data"]
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD python3 deploy/scripts/healthcheck.py --url http://localhost:8000/v1/live
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--log-level", "info", "--proxy-headers", "--forwarded-allow-ips", "*"]

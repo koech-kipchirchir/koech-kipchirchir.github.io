@@ -1,0 +1,8 @@
+[
+    {"category": "tool_use", "prompt": "Call the weather tool to check the temperature in Tokyo.", "expected": "get_weather", "expected_tool": "get_weather", "expected_parameters": {"location": "Tokyo"}, "check_fn": "tool_call"},
+    {"category": "reasoning", "prompt": "If Alice has 3 cats and each cat eats 2 cans of food per day, how many cans do they eat in a week?", "expected": "42", "check_fn": "exact_match"},
+    {"category": "memory", "prompt": "Recall what the user said about their favorite programming language and summarize it.", "expected": "python", "check_fn": "contains_all"},
+    {"category": "code_gen", "prompt": "Write a Python function that checks if a string is a palindrome.", "expected": "def is_palindrome", "check_fn": "code_runs"},
+    {"category": "multi_agent", "prompt": "Coordinate with the research agent and the coding agent to implement a binary search tree.", "expected": "class TreeNode,insert,search", "check_fn": "contains_all"},
+    {"category": "structured_output", "prompt": "Return a JSON object with keys: name, age, city for John (30, New York).", "expected": "valid JSON", "check_fn": "json_valid"}
+]
